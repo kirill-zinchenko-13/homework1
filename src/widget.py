@@ -12,8 +12,8 @@ def mask_card_number(card_info: str) -> str:
 from datetime import datetime
 
 
-def get_data(date_str):
-    """реобразуем строку в объект datetime"""
+def get_data(date_str: str) -> str:
+    """Преобразуем строку в объект datetime"""
     date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%f')
 
     # Форматируем дату в нужный вид
