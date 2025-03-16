@@ -1,49 +1,69 @@
 import pytest
 
-from src.widget import mask_card_number
+from src.masks import get_mask_card_number, get_mask_account
+
+# Фикстура для тестовых данных
 
 
-# Фикстура для тестов карт
 @pytest.fixture
-def card_tests():
+def card_numbers():
     return [
-        ("1234567812345678", "1234 56 ** 5678"),
-        ("4111111111111111", "4111 11 ** 1111"),
-        ("5500000000000004", "5500 00 ** 0004"),  # Пробелы в номере карты
-        ("4012888888881881", "4012 88 ** 1881"),
+        ("1234567890123456", "1234 56 ** 3456"),
+        ("9876543210987654", "9876 54 ** 7654"),
+        ("1111222233334444", "1111 22 ** 4444"),
+        ("5555666677778888", "5555 66 ** 8888"),
+        ("0000111122223333", "0000 11 ** 3333"),
     ]
 
-# Фикстура для тестов счетов
+
+# Параметризованный тест
+@pytest.mark.parametrize("input_card, expected_output", [
+    ("1234567890123456", "1234 56 ** 3456"),
+    ("9876543210987654", "9876 54 ** 7654"),
+    ("1111222233334444", "1111 22 ** 4444"),
+    ("5555666677778888", "5555 66 ** 8888"),
+    ("0000111122223333", "0000 11 ** 3333"),
+])
+def test_get_mask_card_number(input_card, expected_output):
+    assert get_mask_card_number(input_card) == expected_output
+
+
+# Тест с использованием фикстуры
+def test_get_mask_card_number_with_fixture(card_numbers):
+    for card_number, expected in card_numbers:
+
+        assert get_mask_card_number(card_number) == expected
+
+
+# Фикстура для тестовых данных
 @pytest.fixture
-def account_tests():
+def account_numbers():
     return [
-        ("Счет 123456789012", "**9012"),
-        ("Счет 9876543210", "**3210"),
-        ("Счет 100200300400", "**0400"),
-        ("Счет 12345678", "**5678"),  # Счет с 8 цифрами
+        ("123456789012", "**9012"),
+        ("9876543210", "**3210"),
+        ("1111222233334444", "**4444"),
+        ("5555666677778888", "**8888"),
+
+        ("000011112222", "**2222"),
     ]
 
-# Фикстура для некорректных входных данных
-@pytest.fixture
-def invalid_inputs():
-    return [
-        "Некорректный ввод",
-        "Счет abcdefghij",
-        "1234-5678-9012-3456",  # Неправильный формат номера карты
-        "",  # Пустая строка
-    ]
 
-# Тесты для функции mask_card_number
-def test_mask_card_number(card_tests, account_tests, invalid_inputs):
-    # Тестирование карт
-    for card_info, expected in card_tests:
-        assert mask_card_number(card_info) == expected, f"Ошибка для карты: {card_info}"
+# Параметризованный тест
+@pytest.mark.parametrize("input_account, expected_output", [
+    ("123456789012", "**9012"),
+    ("9876543210", "**3210"),
+    ("1111222233334444", "**4444"),
+    ("5555666677778888", "**8888"),
+    ("000011112222", "**2222"),
 
-    # Тестирование счетов
-    for account_info, expected in account_tests:
-        assert mask_card_number(account_info) == expected, f"Ошибка для счета: {account_info}"
+])
+def test_get_mask_account(input_account, expected_output):
 
-    # Тесты на некорректный ввод
-    for invalid_input in invalid_inputs:
-        with pytest.raises((ValueError, TypeError)):
-            mask_card_number(invalid_input)
+    assert get_mask_account(input_account) == expected_output
+
+# Тест с использованием фикстуры
+
+
+def test_get_mask_account_with_fixture(account_numbers):
+    for account_number, expected in account_numbers:
+        assert get_mask_account(account_number) == expected

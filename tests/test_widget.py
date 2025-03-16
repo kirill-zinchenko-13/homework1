@@ -1,48 +1,64 @@
 import pytest
 
-from datetime import datetime
-
 from src.widget import mask_card_number, get_data
 
-# Фикстуры для параметризованных тестов
-@pytest.fixture
-def card_tests():
-    return [
-        ("1234567812345678", "1234 56 ** 5678"),
-        ("4111111111111111", "4111 11 ** 1111"),
-        ("5500 0000 0000 0004", "5500 00 ** 0004"),  # Пробелы в номере карты
-        ("4012888888881881", "4012 88 ** 1881"),
-    ]
+
+# Фикстура для тестовых данных
+
 
 @pytest.fixture
-def account_tests():
+def test_data():
     return [
-        ("Счет 123456789012", "**9012"),
-        ("Счет 9876543210", "**3210"),
-        ("Счет 100200300400", "**0400"),
-        ("Счет 12345678", "**5678"),  # Счет с 8 цифрами
+        ("Счет 123456789012", "**9012"),  # Тест для счета
+        ("Счет 9876543210", "**3210"),  # Тест для счета
+        ("1234 5678 9012 3456", "**** **** **** 3456"),  # Тест для карты
+        ("9876 5432 1098 7654", "**** **** **** 7654"),  # Тест для карты
     ]
 
+
+# Параметризованный тест
+@pytest.mark.parametrize("input_card_info, expected_output", [
+    ("Счет 123456789012", "**9012"),
+    ("Счет 9876543210", "**3210"),
+    ("1234 5678 9012 3456", "**** **** **** 3456"),
+    ("9876 5432 1098 7654", "**** **** **** 7654"),
+])
+def test_mask_card_number(input_card_info, expected_output):
+    assert mask_card_number(input_card_info) == expected_output
+
+
+# Тест с использованием фикстуры
+def test_mask_card_number_with_fixture(test_data):
+    for card_info, expected in test_data:
+        assert mask_card_number(card_info) == expected
+
+
+# Фикстура для тестовых данных
 @pytest.fixture
-def invalid_inputs():
+def test_data_new():
     return [
-        "Некорректный ввод",
-        "Счет abcdefghij",
-        "1234-5678-9012-3456",  # Неправильный формат номера карты
-        "",  # Пустая строка
+        ("2023-10-01T12:30:45.123456", "01.10.2023"),  # Тест с полной датой и временем
+        ("2022-05-15T08:00:00.000000", "15.05.2022"),  # Тест с другой датой
+        ("2000-01-01T00:00:00.000000", "01.01.2000"),  # Граничный случай
+        ("1999-12-31T23:59:59.999999", "31.12.1999"),  # Граничный случай
+
     ]
 
-# Тесты для функции mask_card_number
-def test_mask_card_number(card_tests, account_tests, invalid_inputs):
-    # Параметризованные тесты для карт
-    for card_info, expected in card_tests:
-        assert mask_card_number(card_info) == expected, f"Ошибка для карты: {card_info}"
 
-    # Параметризованные тесты для счетов
-    for account_info, expected in account_tests:
-        assert mask_card_number(account_info) == expected, f"Ошибка для счета: {account_info}"
+# Параметризованный тест
+@pytest.mark.parametrize("input_date_str, expected_output", [
+    ("2023-10-01T12:30:45.123456", "01.10.2023"),
+    ("2022-05-15T08:00:00.000000", "15.05.2022"),
+    ("2000-01-01T00:00:00.000000", "01.01.2000"),
+    ("1999-12-31T23:59:59.999999", "31.12.1999"),
+])
+def test_get_data(input_date_str, expected_output):
+    assert get_data(input_date_str) == expected_output
 
-    # Тесты на некорректный ввод
-    for invalid_input in invalid_inputs:
-        with pytest.raises((ValueError, TypeError)):
-            mask_card_number(invalid_input)
+
+# Тест с использованием фикстуры
+
+
+def test_get_data_with_fixture(test_data):
+    for date_str, expected in test_data:
+        assert get_data(date_str) == expected

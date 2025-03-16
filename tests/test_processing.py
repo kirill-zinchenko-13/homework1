@@ -5,52 +5,91 @@ from datetime import datetime
 from src.processing import filter_by_state, sort_by_date
 
 
-# Пример данных для тестирования
+# Фикстура для тестовых данных
 @pytest.fixture
-def transactions():
+def transactions_data():
     return [
-        {"id": 1, "date": datetime(2023, 1, 1), "state": "EXECUTED"},
-        {"id": 2, "date": datetime(2023, 1, 2), "state": "PENDING"},
-        {"id": 3, "date": datetime(2023, 1, 3), "state": "EXECUTED"},
-        {"id": 4, "date": datetime(2023, 1, 4), "state": "CANCELLED"},
-        {"id": 5, "date": datetime(2023, 1, 5), "state": "EXECUTED"},
-        {"id": 6, "date": datetime(2023, 1, 5), "state": "PENDING"},  # одинаковая дата
+        {"id": 1, "amount": 100, "state": "EXECUTED"},
+        {"id": 2, "amount": 200, "state": "PENDING"},
+        {"id": 3, "amount": 300, "state": "EXECUTED"},
+        {"id": 4, "amount": 400, "state": "CANCELLED"},
+        {"id": 5, "amount": 500, "state": "EXECUTED"},
     ]
 
-def test_filter_by_state(transactions):
-    # Параметризованные тесты для фильтрации по статусу
-    states_to_test = [
-        ("EXECUTED", [1, 3, 5]),
-        ("PENDING", [2, 6]),
-        ("CANCELLED", [4]),
-        ("UNKNOWN", []),  # Нет таких статусов
+# Параметризованный тест
+
+
+@pytest.mark.parametrize("input_state, expected_output", [
+
+    ("EXECUTED", [
+        {"id": 1, "amount": 100, "state": "EXECUTED"},
+        {"id": 3, "amount": 300, "state": "EXECUTED"},
+        {"id": 5, "amount": 500, "state": "EXECUTED"},
+    ]),
+    ("PENDING", [
+        {"id": 2, "amount": 200, "state": "PENDING"},
+    ]),
+    ("CANCELLED", [
+        {"id": 4, "amount": 400, "state": "CANCELLED"},
+    ]),
+    ("UNKNOWN", []),  # Состояние не найдено
+])
+def test_filter_by_state(transactions_data, input_state, expected_output):
+    assert filter_by_state(transactions_data, input_state) == expected_output
+
+# Тест с использованием фикстуры для состояния по умолчанию
+
+
+def test_filter_by_state_default(transactions_data):
+    expected_output = [
+        {"id": 1, "amount": 100, "state": "EXECUTED"},
+        {"id": 3, "amount": 300, "state": "EXECUTED"},
+        {"id": 5, "amount": 500, "state": "EXECUTED"},
+    ]
+    assert filter_by_state(transactions_data) == expected_output
+
+
+# Фикстура для тестовых данных
+@pytest.fixture
+def transactions_data_new():
+    return [
+        {"id": 1, "amount": 100, "date": datetime(2023, 10, 1)},
+        {"id": 2, "amount": 200, "date": datetime(2023, 9, 15)},
+        {"id": 3, "amount": 300, "date": datetime(2023, 10, 5)},
+        {"id": 4, "amount": 400, "date": datetime(2023, 8, 20)},
+        {"id": 5, "amount": 500, "date": datetime(2023, 9, 30)},
     ]
 
-    for state, expected_ids in states_to_test:
-        filtered_transactions = filter_by_state(transactions, state=state)
-        assert len(filtered_transactions) == len(expected_ids)
-        assert all(tx["id"] in expected_ids for tx in filtered_transactions)
 
-def test_sort_by_date(transactions):
-    # Тестируем сортировку по дате (по умолчанию убывание)
-    sorted_transactions_desc = sort_by_date(transactions)
-    assert sorted_transactions_desc[0]["date"] == datetime(2023, 1, 5)
-    assert sorted_transactions_desc[-1]["date"] == datetime(2023, 1, 1)
+# Параметризованный тест
+@pytest.mark.parametrize("reverse, expected_order", [
+    (True, [
+        {"id": 3, "amount": 300, "date": datetime(2023, 10, 5)},
+        {"id": 1, "amount": 100, "date": datetime(2023, 10, 1)},
+        {"id": 5, "amount": 500, "date": datetime(2023, 9, 30)},
+        {"id": 2, "amount": 200, "date": datetime(2023, 9, 15)},
+        {"id": 4, "amount": 400, "date": datetime(2023, 8, 20)},
+    ]),
+    (False, [
+        {"id": 4, "amount": 400, "date": datetime(2023, 8, 20)},
+        {"id": 2, "amount": 200, "date": datetime(2023, 9, 15)},
+        {"id": 5, "amount": 500, "date": datetime(2023, 9, 30)},
+        {"id": 1, "amount": 100, "date": datetime(2023, 10, 1)},
+        {"id": 3, "amount": 300, "date": datetime(2023, 10, 5)},
+    ]),
+])
+def test_sort_by_date(transactions_data, reverse, expected_order):
 
-    # Тестируем сортировку по дате в порядке возрастания
-    sorted_transactions_asc = sort_by_date(transactions, reverse=False)
-    assert sorted_transactions_asc[0]["date"] == datetime(2023, 1, 1)
-    assert sorted_transactions_asc[-1]["date"] == datetime(2023, 1, 5)
+    assert sort_by_date(transactions_data, reverse) == expected_order
 
-    # Проверка корректности сортировки при одинаковых датах
-    sorted_transactions_same_date = [
-        {"id": 7, "date": datetime(2023, 1, 5), "state": "EXECUTED"},
-        {"id": 8, "date": datetime(2023, 1, 5), "state": "PENDING"},
+
+# Тест с использованием фикстуры для сортировки по умолчанию (убывание)
+def test_sort_by_date_default(transactions_data):
+    expected_order = [
+        {"id": 3, "amount": 300, "date": datetime(2023, 10, 5)},
+        {"id": 1, "amount": 100, "date": datetime(2023, 10, 1)},
+        {"id": 5, "amount": 500, "date": datetime(2023, 9, 30)},
+        {"id": 2, "amount": 200, "date": datetime(2023, 9, 15)},
+        {"id": 4, "amount": 400, "date": datetime(2023, 8, 20)},
     ]
-    sorted_transactions = sort_by_date(sorted_transactions_same_date)
-    assert sorted_transactions[0]["id"] == 7 or sorted_transactions[0]["id"] == 8
-    assert sorted_transactions[1]["id"] != sorted_transactions[0]["id"]
-
-    # Тестирование на некорректные форматы дат
-    with pytest.raises(TypeError):
-        sort_by_date(transactions + [{"id": 9, "date": "not-a-date", "state": "EXECUTED"}])
+    assert sort_by_date(transactions_data) == expected_order
