@@ -59,20 +59,6 @@ def test_get_data(input_date_str, expected_output):
 # Тест с использованием фикстуры
 
 
-def test_get_data():
-    # Тестовые данные: (входная строка, ожидаемый результат)
-    test_cases = [
-        ("2025-03-30T12:34:56.789", "30.03.2025"),
-        ("2024-01-01T00:00:00.000", "01.01.2024"),
-        ("1999-12-31T23:59:59.999", "31.12.1999"),
-        ("2000-02-29T12:00:00.000", "29.02.2000"),  # високосный год
-        ("2025-03-30T23:59:59.999", "30.03.2025"),
-    ]
-
-    for input_date, expected_output in test_cases:
-        assert get_data(input_date) == expected_output
-
-
 def test_get_data_invalid_input():
     # Проверяем обработку некорректных данных
     with pytest.raises(ValueError):

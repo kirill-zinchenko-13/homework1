@@ -15,8 +15,6 @@ def transactions_data():
         {"id": 5, "amount": 500, "date": "2023-09-30", "state": "EXECUTED"},
     ]
 
-def filter_by_state(transactions, state):
-    return [transaction for transaction in transactions if transaction.get("state") == state]
 
 # Параметризованный тест
 @pytest.mark.parametrize("input_state, expected_output", [
@@ -35,6 +33,7 @@ def filter_by_state(transactions, state):
 ])
 def test_filter_by_state(transactions_data, input_state, expected_output):
     assert filter_by_state(transactions_data, input_state) == expected_output
+
 
 # Тест с использованием фикстуры для фильтрации по умолчанию
 def test_filter_by_state_default(transactions_data):
@@ -55,8 +54,6 @@ def transactions_data_new():
         {"id": 4, "amount": 400, "date": datetime(2023, 8, 20)},
         {"id": 5, "amount": 500, "date": datetime(2023, 9, 30)},
     ]
-def sort_by_date(transactions):
-    return sorted(transactions, key=lambda x: x['date'], reverse=True)
 
 
 # Тест с использованием фикстуры для сортировки по умолчанию (убывание)
