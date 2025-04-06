@@ -1,7 +1,6 @@
 import pytest
 
-from src.widget import mask_card_number, get_data
-
+from src.widget import get_data, mask_card_number
 
 # Фикстура для тестовых данных
 
