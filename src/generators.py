@@ -1,4 +1,5 @@
-from typing import List, Dict, Generator, Union, Any
+from typing import List, Dict, Generator, Union
+
 
 def filter_by_currency(transactions: List[Dict[str, Union[str, Dict]]], currency_code: str) -> Generator[Dict[str, Union[str, Dict]], None, None]:
     """
@@ -14,6 +15,7 @@ def filter_by_currency(transactions: List[Dict[str, Union[str, Dict]]], currency
         if transaction_currency == currency_code:
             yield transaction
 
+
 def transaction_descriptions(transactions: List[Dict[str, Union[str, Dict]]]) -> Generator[str, None, None]:
     """
     Генератор, возвращающий описания транзакций
@@ -25,6 +27,7 @@ def transaction_descriptions(transactions: List[Dict[str, Union[str, Dict]]]) ->
         # Получаем описание транзакции, используя безопасный доступ к вложенным словарям
         description = transaction.get("description", "Описание отсутствует")
         yield description
+
 
 def card_number_generator(start: str, stop: str) -> Generator[str, None, None]:
     # Проверка корректности входных данных
@@ -47,6 +50,7 @@ def card_number_generator(start: str, stop: str) -> Generator[str, None, None]:
         card_number = "{:016d}".format(num)
         yield " ".join(card_number[i:i + 4] for i in range(0, 16, 4))
 
+
 def is_valid_card_number(number: str) -> bool:
     # Проверяем формат номера карты
     if len(number) != 19:
@@ -68,6 +72,7 @@ def is_valid_card_number(number: str) -> bool:
         return False
 
     return True
+
 
 if __name__ == "__main__":
     # Пример списка транзакций
