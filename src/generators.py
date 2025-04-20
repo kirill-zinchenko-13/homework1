@@ -1,7 +1,9 @@
-from typing import List, Dict, Generator, Union
+from typing import Dict, Generator, List, Union
 
 
-def filter_by_currency(transactions: List[Dict[str, Union[str, Dict]]], currency_code: str) -> Generator[Dict[str, Union[str, Dict]], None, None]:
+def filter_by_currency(
+    transactions: List[Dict[str, Union[str, Dict]]], currency_code: str
+) -> Generator[Dict[str, Union[str, Dict]], None, None]:
     """
     Генератор, фильтрующий транзакции по коду валюты
 
@@ -48,7 +50,7 @@ def card_number_generator(start: str, stop: str) -> Generator[str, None, None]:
     for num in range(start_num, stop_num + 1):
         # Форматируем номер карты
         card_number = "{:016d}".format(num)
-        yield " ".join(card_number[i:i + 4] for i in range(0, 16, 4))
+        yield " ".join(card_number[i: i + 4] for i in range(0, 16, 4))
 
 
 def is_valid_card_number(number: str) -> bool:
@@ -77,38 +79,10 @@ def is_valid_card_number(number: str) -> bool:
 if __name__ == "__main__":
     # Пример списка транзакций
     transactions = [
-        {
-            "id": 1,
-            "operationAmount": {
-                "currency": {
-                    "code": "USD"
-                }
-            },
-            "description": "Оплата услуг"
-        },
-        {
-            "id": 2,
-            "operationAmount": {
-                "currency": {
-                    "code": "RUB"
-                }
-            },
-            "description": "Перевод другу"
-        },
-        {
-            "id": 3,
-            "operationAmount": {
-                "currency": {
-                    "code": "USD"
-                }
-            },
-            "description": "Покупка в магазине"
-        },
-        {
-            "id": 4,
-            "description": "Перевод",
-            "operationAmount": {}
-        }
+        {"id": 1, "operationAmount": {"currency": {"code": "USD"}}, "description": "Оплата услуг"},
+        {"id": 2, "operationAmount": {"currency": {"code": "RUB"}}, "description": "Перевод другу"},
+        {"id": 3, "operationAmount": {"currency": {"code": "USD"}}, "description": "Покупка в магазине"},
+        {"id": 4, "description": "Перевод", "operationAmount": {}},
     ]
 
     # Выводим все USD транзакции

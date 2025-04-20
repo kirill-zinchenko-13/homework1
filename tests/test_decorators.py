@@ -1,5 +1,7 @@
-import pytest
 import logging
+
+import pytest
+
 from src.decorators import add, divide
 
 
