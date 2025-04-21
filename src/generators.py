@@ -50,7 +50,7 @@ def card_number_generator(start: str, stop: str) -> Generator[str, None, None]:
     for num in range(start_num, stop_num + 1):
         # Форматируем номер карты
         card_number = "{:016d}".format(num)
-        yield " ".join(card_number[i: i + 4] for i in range(0, 16, 4))
+        yield " ".join(card_number[i : i + 4] for i in range(0, 16, 4))
 
 
 def is_valid_card_number(number: str) -> bool:

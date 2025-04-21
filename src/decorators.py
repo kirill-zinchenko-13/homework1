@@ -1,11 +1,7 @@
-import functools
-import logging
-
-# Настройка логирования для записи в файл
-logging.basicConfig(filename="mylog.txt", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+from functools import wraps
 
 
-def log(func):
+def log(filename=None):
     """
     Декоратор для логирования вызовов функций.
 
@@ -13,34 +9,51 @@ def log(func):
     а также об ошибках, если таковые возникают.
 
     Аргументы:
-        func: Функция, которую нужно обернуть.
+        filename: Имя файла для записи логов (если None, выводит в консоль).
 
     Возвращает:
         Обернутую функцию с логированием.
     """
 
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        # Логируем начало выполнения функции
-        logging.info(f"Начало выполнения функции '{func.__name__}' с аргументами: {args}, {kwargs}")
-        try:
-            # Выполняем функцию
-            result = func(*args, **kwargs)
-            # Логируем успешное завершение
-            logging.info(f"Функция '{func.__name__}' завершена успешно. Результат: {result}")
-            return result
-        except Exception as e:
-            # Логируем ошибку
-            logging.error(f"Ошибка в функции '{func.__name__}': {type(e).__name__} с аргументами: {args}, {kwargs}")
-            raise  # Повторно выбрасываем исключение после логирования
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                log_start = f"Вызов функции '{func.__name__}' с аргументами: {args}, {kwargs}"
+                if filename:
+                    with open(filename, "a", encoding="utf-8") as text:
+                        text.write(log_start + "\n")
+                else:
+                    print(log_start)
 
-    return wrapper
+                result = func(*args, **kwargs)
+
+                log_info = f"Функция '{func.__name__}' завершена успешно. Результат: {result}"
+                if filename:
+                    with open(filename, "a", encoding="utf-8") as text:
+                        text.write(log_info + "\n")
+                else:
+                    print(log_info)
+
+                return result
+            except Exception as e:
+                log_error = f"Ошибка в функции '{func.__name__}': {type(e).__name__} с аргументами: {args}, {kwargs}"
+                if filename:
+                    with open(filename, "a", encoding="utf-8") as text:
+                        text.write(log_error + "\n")
+                else:
+                    print(log_error)
+                raise e
+
+        return wrapper
+
+    return decorator
 
 
 # Пример использования декоратора
 
 
-@log
+@log(filename="mylog.txt")
 def add(a, b):
     """
     Возвращает сумму двух чисел.
@@ -55,7 +68,7 @@ def add(a, b):
     return a + b
 
 
-@log
+@log(filename="mylog.txt")
 def divide(x, y):
     """
     Делит первое число на второе.

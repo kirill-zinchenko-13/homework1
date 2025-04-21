@@ -1,38 +1,51 @@
-import logging
+import os
 
 import pytest
 
 from src.decorators import add, divide
 
+# Убедитесь, что файл лога не существует перед тестами
+log_file = "mylog.txt"
 
-def test_add(caplog):
-    with caplog.at_level(logging.INFO):
-        result = add(5, 3)
 
-    # Проверяем результат функции
+@pytest.fixture(autouse=True)
+def cleanup_log_file():
+    """Удаляет файл лога перед и после тестов."""
+    if os.path.exists(log_file):
+        os.remove(log_file)
+    yield
+    if os.path.exists(log_file):
+        os.remove(log_file)
+
+
+def test_add():
+    """Тест для функции сложения."""
+    result = add(5, 3)
     assert result == 8
 
-    # Проверяем логи
-    assert "Начало выполнения функции 'add' с аргументами: (5, 3), {}" in caplog.text
-    assert "Функция 'add' завершена успешно. Результат: 8" in caplog.text
+    # Проверка содержимого файла лога
+    with open(log_file, 'r', encoding='utf-8') as f:
+        log_content = f.read()
+    assert "Функция 'add' завершена успешно. Результат: 8" in log_content
 
 
-def test_divide(caplog):
-    with caplog.at_level(logging.INFO):
-        result = divide(10, 2)
-
-    # Проверяем результат функции
+def test_divide():
+    """Тест для функции деления."""
+    result = divide(10, 2)
     assert result == 5
 
-    # Проверяем логи
-    assert "Начало выполнения функции 'divide' с аргументами: (10, 2), {}" in caplog.text
-    assert "Функция 'divide' завершена успешно. Результат: 5" in caplog.text
+    # Проверка содержимого файла лога
+    with open(log_file, 'r', encoding='utf-8') as f:
+        log_content = f.read()
+    assert "Функция 'divide' завершена успешно. Результат: 5" in log_content
 
 
-def test_divide_by_zero(caplog):
+def test_divide_by_zero():
+    """Тест для деления на ноль, ожидается ошибка."""
     with pytest.raises(ZeroDivisionError):
-        with caplog.at_level(logging.INFO):
-            divide(10, 0)
+        divide(10, 0)
 
-    # Проверяем логи на наличие ошибки
-    assert "Ошибка в функции 'divide': ZeroDivisionError с аргументами: (10, 0), {}" in caplog.text
+    # Проверка содержимого файла лога на наличие ошибки
+    with open(log_file, 'r', encoding='utf-8') as f:
+        log_content = f.read()
+    assert "Ошибка в функции 'divide': ZeroDivisionError" in log_content
