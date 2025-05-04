@@ -47,7 +47,7 @@ class TestCurrencyFunctions(unittest.TestCase):
         result = convert_to_rub(transaction)
         self.assertEqual(result, 1000.0)
 
-    @patch('your_module.get_exchange_rate')  # Патчинг функции get_exchange_rate
+    @patch('external_api.py.get_exchange_rate')  # Патчинг функции get_exchange_rate
     def test_convert_to_rub_with_other_currency(self, mock_get_exchange_rate):
         transaction = {'amount': 100, 'currency': 'USD'}
         mock_get_exchange_rate.return_value = 75.0  # Настройка мока для курса USD к RUB
@@ -55,7 +55,7 @@ class TestCurrencyFunctions(unittest.TestCase):
         result = convert_to_rub(transaction)
         self.assertEqual(result, 7500.0)  # 100 * 75.0
 
-    @patch('your_module.get_exchange_rate')  # Патчинг функции get_exchange_rate
+    @patch('external_api.py.get_exchange_rate')  # Патчинг функции get_exchange_rate
     def test_convert_to_rub_currency_not_found(self, mock_get_exchange_rate):
         transaction = {'amount': 100, 'currency': 'USD'}
         mock_get_exchange_rate.return_value = None  # Курс не найден
