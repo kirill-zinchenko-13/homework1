@@ -1,6 +1,7 @@
 import json
 import os
 
+
 def load_transactions_from_json(file_path):
     """Загружает данные о транзакциях из JSON-файла.
 
@@ -13,7 +14,7 @@ def load_transactions_from_json(file_path):
     if not os.path.exists(file_path):
         return []
 
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         try:
             data = json.load(file)
             if isinstance(data, list):

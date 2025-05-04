@@ -1,67 +1,73 @@
+import os
 import unittest
 from unittest.mock import patch, Mock
+import requests
 from src.external_api import get_exchange_rate, convert_to_rub
 
-class TestCurrencyFunctions(unittest.TestCase):
 
-    @patch('requests.get')
+class TestCurrencyConverter(unittest.TestCase):
+
+    @patch('external_api.requests.get')
     def test_get_exchange_rate_success(self, mock_get):
-        # Настройка мока для успешного ответа от API
+        # Настройка mock-ответа
         mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            'rates': {
-                'RUB': 75.0
-            }
-        }
+        mock_response.json.return_value = {'rates': {'RUB': 75.0}}
+        mock_response.raise_for_status = Mock()  # Не вызывает ошибку
         mock_get.return_value = mock_response
 
         result = get_exchange_rate('USD')
         self.assertEqual(result, 75.0)
+        mock_get.assert_called_once_with(
+            f'https://api.apilayer.com/exchangerates_data/latest?base=USD&symbols=RUB',
+            headers={"apikey": os.getenv("API_KEY")}
+        )
 
-    @patch('requests.get')
-    def test_get_exchange_rate_failure(self, mock_get):
-        # Настройка мока для ошибки при запросе
-        mock_get.side_effect = requests.exceptions.HTTPError("Ошибка HTTP")
-
-        result = get_exchange_rate('USD')
-        self.assertIsNone(result)
-
-    @patch('requests.get')
-    def test_get_exchange_rate_no_rub(self, mock_get):
-        # Настройка мока для ответа без RUB в rates
+    @patch('external_api.requests.get')
+    def test_get_exchange_rate_no_rub_in_rates(self, mock_get):
+        # Настройка mock-ответа без RUB в rates
         mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            'rates': {
-                'EUR': 90.0
-            }
-        }
+        mock_response.json.return_value = {'rates': {}}
+        mock_response.raise_for_status = Mock()  # Не вызывает ошибку
         mock_get.return_value = mock_response
 
-        result = get_exchange_rate('USD')
+        result = get_exchange_rate('EUR')
         self.assertIsNone(result)
+        mock_get.assert_called_once()
 
-    def test_convert_to_rub_with_rub(self):
-        transaction = {'amount': 1000, 'currency': 'RUB'}
+    @patch('external_api.requests.get')
+    def test_get_exchange_rate_exception(self, mock_get):
+        # Настройка mock-ответа для выбрасывания исключения
+        mock_get.side_effect = requests.exceptions.RequestException("Ошибка сети")
+
+        result = get_exchange_rate('GBP')
+        self.assertIsNone(result)
+        mock_get.assert_called_once()
+
+    def test_convert_to_rub_already_in_rub(self):
+        transaction = {'amount': 100, 'currency': 'RUB'}
         result = convert_to_rub(transaction)
-        self.assertEqual(result, 1000.0)
+        self.assertEqual(result, 100.0)
 
-    @patch('external_api.py.get_exchange_rate')  # Патчинг функции get_exchange_rate
-    def test_convert_to_rub_with_other_currency(self, mock_get_exchange_rate):
+    @patch('external_api.get_exchange_rate')
+    def test_convert_to_rub_success(self, mock_get_exchange_rate):
+        # Настройка mock-ответа для get_exchange_rate
+        mock_get_exchange_rate.return_value = 75.0
+
         transaction = {'amount': 100, 'currency': 'USD'}
-        mock_get_exchange_rate.return_value = 75.0  # Настройка мока для курса USD к RUB
-
         result = convert_to_rub(transaction)
-        self.assertEqual(result, 7500.0)  # 100 * 75.0
+        self.assertEqual(result, 7500.0)
+        mock_get_exchange_rate.assert_called_once_with('USD')
 
-    @patch('external_api.py.get_exchange_rate')  # Патчинг функции get_exchange_rate
-    def test_convert_to_rub_currency_not_found(self, mock_get_exchange_rate):
-        transaction = {'amount': 100, 'currency': 'USD'}
-        mock_get_exchange_rate.return_value = None  # Курс не найден
+    @patch('external_api.get_exchange_rate')
+    def test_convert_to_rub_no_exchange_rate(self, mock_get_exchange_rate):
+        # Настройка mock-ответа для get_exchange_rate, который возвращает None
+        mock_get_exchange_rate.return_value = None
 
+        transaction = {'amount': 100, 'currency': 'EUR'}
         result = convert_to_rub(transaction)
-        self.assertEqual(result, 0.0)  # Ожидаем 0.0 из-за отсутствия курса
+        self.assertEqual(result, 0.0)
+        mock_get_exchange_rate.assert_called_once_with('EUR')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -18,17 +18,15 @@ def get_exchange_rate(currency):
         float: Курс валюты к рублю или None в случае ошибки.
     """
     url = f"{BASE_URL}/latest?base={currency}&symbols=RUB"
-    headers = {
-        "apikey": API_ACCESS_KEY
-    }
+    headers = {"apikey": API_ACCESS_KEY}
 
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()  # Проверка на ошибки HTTP
         data = response.json()
 
-        if 'rates' in data and 'RUB' in data['rates']:
-            return data['rates']['RUB']
+        if "rates" in data and "RUB" in data["rates"]:
+            return data["rates"]["RUB"]
         else:
             return None
     except Exception as e:
@@ -45,10 +43,10 @@ def convert_to_rub(transaction):
     Returns:
         float: Сумма транзакции в рублях.
     """
-    amount = transaction.get('amount', 0.0)
-    currency = transaction.get('currency', 'RUB').upper()
+    amount = transaction.get("amount", 0.0)
+    currency = transaction.get("currency", "RUB").upper()
 
-    if currency == 'RUB':
+    if currency == "RUB":
         return float(amount)
 
     exchange_rate = get_exchange_rate(currency)
