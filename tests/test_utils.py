@@ -1,8 +1,10 @@
 import os
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 import requests
-from src.external_api import get_exchange_rate, convert_to_rub
+
+from src.external_api import convert_to_rub, get_exchange_rate
 
 
 class TestCurrencyConverter(unittest.TestCase):
@@ -18,7 +20,7 @@ class TestCurrencyConverter(unittest.TestCase):
         result = get_exchange_rate('USD')
         self.assertEqual(result, 75.0)
         mock_get.assert_called_once_with(
-            f'https://api.apilayer.com/exchangerates_data/latest?base=USD&symbols=RUB',
+            'https://api.apilayer.com/exchangerates_data/latest?base=USD&symbols=RUB',
             headers={"apikey": os.getenv("API_KEY")}
         )
 
