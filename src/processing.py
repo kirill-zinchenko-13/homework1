@@ -20,5 +20,5 @@ def sort_by_date(transactions: list[dict], reverse: bool = True) -> list[dict]:
     return sorted(
         transactions,
         key=lambda x: (x.get("date") is None, x.get("date")),  # Сначала сортируем по наличию даты
-        reverse=reverse
+        reverse=reverse,
     )
